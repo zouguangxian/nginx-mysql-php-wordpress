@@ -60,11 +60,6 @@ COPY ./nginx-default-site /etc/nginx/sites-available/default
 COPY ./entry.sh /usr/local/bin/
 RUN chmod +x /usr/local/bin/entry.sh
 
-RUN mkdir /srv/files
-COPY ./nginx-helper.1.9.6.zip /srv/files/
-COPY ./wordpress-4.3.1.tar.gz /srv/files/
-RUN mkdir -p /var/www/html && tar -zxvf /srv/files/wordpress-*.tar.gz --strip-components 1 -C /var/www/html 
-RUN mkdir -p /var/www/html && unzip -o /srv/files/nginx-helper.*.zip -d /var/www/html/wp-content/plugins
 RUN mkdir -p /var/www/html && chown -R www-data:www-data /var/www/html
 
 VOLUME /var/lib/mysql

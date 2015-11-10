@@ -98,8 +98,15 @@ fi
 
 
 if [ ! "$(ls -A /var/www/html)" ]; then
-	tar -zxvf /srv/files/wordpress-*.tar.gz --strip-components 1 -C /var/www/html 
-	unzip -o /srv/files/nginx-helper.*.zip -d /var/www/html/wp-content/plugins
+	if [ -d /srv/install-files ]; then
+		cp /srv/install-files/wordpress-*.tar.gz /tmp
+		cp /srv/install-files/nginx-helper.*.zip /tmp
+	else
+		cd /tmp && { curl -O https://wordpress.org/latest.tar.gz; mv latest.tar.gz wordpress-latest.tar.gz; cd -; }
+		cd /tmp && { curl -O `curl -i -s https://wordpress.org/plugins/nginx-helper/ | egrep -o "https://downloads.wordpress.org/plugin/[^']+"`; cd-;}
+	fi
+	tar -zxvf /tmp/wordpress-*.tar.gz --strip-components 1 -C /var/www/html
+	unzip -o /tmp/nginx-helper.*.zip -d /var/www/html/wp-content/plugins
 else
 	if [ ! -f /var/www/html/wp-content ]; then
 		echo "WARNING: /var/www/html already exists."
@@ -110,8 +117,9 @@ fi
 if [ ! -f /var/www/html/wp-config.php ]; then
 	if [ ! -f /var/lib/mysql/passwords.txt ]; then
 		echo "WARNING: /var/lib/mysql/passwords.txt does not exist."
+		exit 1
 	fi
-	WORDPRESS_PASSWORD=`cat /var/lib/mysql/passwords.txt | awk '$1 == "root:" { print $2;exit }'`
+	WORDPRESS_PASSWORD=`cat /var/lib/mysql/passwords.txt | awk '$1 == "wordpress:" { print $2;exit }'`
 	sed -e "s/database_name_here/$WORDPRESS_DB/
 	s/username_here/$WORDPRESS_DB/
 	s/password_here/$WORDPRESS_PASSWORD/
