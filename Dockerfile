@@ -62,7 +62,8 @@ RUN chmod +x /usr/local/bin/entry.sh
 
 RUN mkdir -p /var/www/html && chown -R www-data:www-data /var/www/html
 
-VOLUME /var/lib/mysql
+VOLUME ["/var/lib/mysql", "/var/www/html"]
+
 EXPOSE 22 80
 
 CMD ["/usr/local/bin/entry.sh"]
