@@ -50,8 +50,8 @@ WORDPRESS_DB="wordpress"
 
 if [ ! -d "$DATA_DIR/mysql" ]; then
 	# refer: https://dev.mysql.com/doc/refman/5.7/en/mysql-install-db.html
-	vercomp ${MYSQL_MAJOR} "5.7.6"
 	echo 'Initializing database'
+	vercomp ${MYSQL_MAJOR} "5.7.6"
 	if [ $? = ">" ]; then
 		mysqld --initialize-insecure=on
 	else
@@ -59,7 +59,7 @@ if [ ! -d "$DATA_DIR/mysql" ]; then
 	fi
 	echo 'Database initialized'
 
-	mysqld --skip-networking & 
+	mysqld --skip-innodb-use-native-aio --skip-networking & 
 
 	MYSQL_PASSWORD=`pwgen -c -n -1 12`
 	WORDPRESS_PASSWORD=`pwgen -c -n -1 12`
@@ -92,8 +92,8 @@ if [ ! -d "$DATA_DIR/mysql" ]; then
 
 	echo "root password: ${MYSQL_PASSWORD}"
 	echo "wordpress password: ${MYSQL_PASSWORD}"
-	echo "root: ${MYSQL_PASSWORD}" > /var/lib/mysql/passwords.txt
-	echo "wordpress: ${WORDPRESS_PASSWORD}" >> /var/lib/mysql/passwords.txt
+	echo "root: ${MYSQL_PASSWORD}" > ${DATA_DIR}/passwords.txt
+	echo "wordpress: ${WORDPRESS_PASSWORD}" >> ${DATA_DIR}/passwords.txt
 fi
 
 
@@ -115,11 +115,11 @@ else
 fi
 
 if [ ! -f /var/www/html/wp-config.php ]; then
-	if [ ! -f /var/lib/mysql/passwords.txt ]; then
-		echo "WARNING: /var/lib/mysql/passwords.txt does not exist."
+	if [ ! -f ${DATA_DIR}/passwords.txt ]; then
+		echo "WARNING: ${DATA_DIR}/passwords.txt does not exist."
 		exit 1
 	fi
-	WORDPRESS_PASSWORD=`cat /var/lib/mysql/passwords.txt | awk '$1 == "wordpress:" { print $2;exit }'`
+	WORDPRESS_PASSWORD=`cat ${DATA_DIR}/passwords.txt | awk '$1 == "wordpress:" { print $2;exit }'`
 	sed -e "s/database_name_here/$WORDPRESS_DB/
 	s/username_here/$WORDPRESS_DB/
 	s/password_here/$WORDPRESS_PASSWORD/
